@@ -1,26 +1,27 @@
 const { expect } = require('chai');
-const db = require('../db');
+const faker = require('faker');
 const mongoose = require('mongoose');
-const User = require('./User');
-
-before(async () => {
-  await db.setUp();
-});
-
-afterEach(async () => {
-  await db.dropCollections();
-});
-
-after(async () => {
-  await db.dropDatabase();
-});
+const db = require('../../db/config');
+const User = require('../../models/User');
 
 describe("User model", () => {
+  before(async () => {
+    await db.setUp('test');
+  });
+
+  afterEach(async () => {
+    await db.dropCollections();
+  });
+
+  after(async () => {
+    await db.closeConnection();
+  });
+
   it('should create a new Student user', async () => {
     const studentData = {
-      name: 'Ronaldo Lemos',
-      email: 'rlemos@uol.com.br',
-      password: 'blig2008',
+      name: faker.name.findName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
       role: 'STUDENT'
     };
 
@@ -38,9 +39,9 @@ describe("User model", () => {
 
   it('should create a new Educator user', async () => {
     const educatorData = {
-      name: 'Antonio Simas',
-      email: 'asimas@terra.com.br',
-      password: 'bol2212',
+      name: faker.name.findName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
       role: 'EDUCATOR'
     };
 
@@ -58,11 +59,11 @@ describe("User model", () => {
 
   it('should create a new User only with fields defined in schema', async () => {
     const educatorData = {
-      name: 'Antonio Simas',
-      email: 'asimas@terra.com.br',
-      password: 'bol2212',
+      name: faker.name.findName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
       phone: '22454231',
-      role: 'EDUCATOR'
     };
 
     const newEducator = new User(educatorData);
@@ -76,9 +77,9 @@ describe("User model", () => {
 
   it('should throw an exception if role is invalid', async () => {
     const userData = {
-      name: 'Amara Amancio',
-      email: 'negale@ig.com.br',
-      password: 'porchate112',
+      name: faker.name.findName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
       role: 'Director'
     };
 
@@ -99,10 +100,10 @@ describe("User model", () => {
 
   it('should throw an exception if email is invalid', async () => {
     const userData = {
-      name: 'Amara Amancio',
-      email: 'negale',
-      password: 'porchate112',
-      role: 'student'
+      name: faker.name.findName(),
+      email: 'invalidemail.com',
+      password: faker.internet.password(),
+      role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
     };
 
     const newUser = new User(userData);
