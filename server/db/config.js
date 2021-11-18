@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
-const config = require('../config.js');
+const config = require('../../config');
 
-module.exports.setUp = async () => {
-  await mongoose.connect(config.mongoUri, { useNewUrlParser: true });
+module.exports.setUp = async (environment) => {
+  await mongoose.connect(
+    `${config.mongoUri + config.dbName + (environment || '')}`,
+    { useNewUrlParser: true });
+}
+
+module.exports.closeConnection = async () => {
+  await mongoose.connection.close();
 }
 
 module.exports.dropDatabase = async () => {
