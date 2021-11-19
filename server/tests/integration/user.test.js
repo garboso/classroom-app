@@ -1,14 +1,13 @@
 const axios = require('axios');
 const chai = require('chai');
+chai.use(require('chai-subset'));
 const faker = require('faker');
 const db = require('../../db/config');
 const bson = require('bson');
 const expect = chai.expect;
 const { initializeWebServer, stopWebServer } = require('../../express');
-
 let axiosAPIClient;
-
-chai.use(require('chai-subset'));
+const PASSWORD_LENGTH = 16;
 
 describe('User routes', () => {
   before(async () => {
@@ -41,7 +40,7 @@ describe('User routes', () => {
           await axiosAPIClient.post('/api/user', {
             name: faker.name.findName(),
             email: faker.internet.email(),
-            password: faker.internet.password(),
+            password: faker.internet.password(PASSWORD_LENGTH),
             role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
             createdAt: faker.date.past(),
             updatedAt: faker.date.soon()
@@ -63,7 +62,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -100,7 +99,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past(),
           updatedAt: faker.date.soon()
@@ -120,7 +119,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past(),
           updatedAt: faker.date.soon()
@@ -141,7 +140,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -168,7 +167,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: 'STUDENT',
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -209,7 +208,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -232,7 +231,7 @@ describe('User routes', () => {
         const userData = {
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
