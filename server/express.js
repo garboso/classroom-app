@@ -6,6 +6,7 @@ const compress = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
 const userRoutes = require('./routes/user');
+const authRoutes = require('./routes/auth');
 const config = require('../config');
 let app;
 
@@ -23,6 +24,7 @@ const initializeWebServer = () => {
     app.use(cors());
 
     app.use('/', userRoutes);
+    app.use('/', authRoutes);
 
     httpServer = http.createServer(app);
 
