@@ -26,7 +26,7 @@ describe("User model", () => {
     };
 
     const newStudent = new User(studentData);
-    newStudent.setPassword(studentData.password);
+    newStudent.password = studentData.password;
 
     savedStudent = await newStudent.save();
 
@@ -46,7 +46,7 @@ describe("User model", () => {
     };
 
     const newEducator = new User(educatorData);
-    newEducator.setPassword(educatorData.password);
+    newEducator.password = educatorData.password;
 
     const savedEducator = await newEducator.save();
 
@@ -67,7 +67,7 @@ describe("User model", () => {
     };
 
     const newEducator = new User(educatorData);
-    newEducator.setPassword(educatorData.password);
+    newEducator.password = educatorData.password;
 
     const savedEducator = await newEducator.save();
 
@@ -84,7 +84,7 @@ describe("User model", () => {
     };
 
     const newUser = new User(userData);
-    newUser.setPassword(userData.password);
+    newUser.password = userData.password;
 
     let exception;
 
@@ -107,7 +107,7 @@ describe("User model", () => {
     };
 
     const newUser = new User(userData);
-    newUser.setPassword(userData.password);
+    newUser.password = userData.password;
 
     let exception;
 
@@ -119,5 +119,136 @@ describe("User model", () => {
 
     expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
     expect(exception.errors.email).to.exist;
+  });
+
+  describe('password checking', () => {
+    it('should return true if password is correct', async () => {
+      const password = faker.internet.password();
+
+      const userData = {
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: password,
+        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+      };
+
+      const newUser = new User(userData);
+      newUser.password = userData.password;
+
+      savedUser = await newUser.save();
+
+      expect(savedUser.validatePassword(password)).to.be.true;
+    });
+
+    it('should return false if password is wrong', async () => {
+      const userData = {
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+      };
+
+      const newUser = new User(userData);
+      newUser.password = userData.password;
+
+      savedUser = await newUser.save();
+
+      expect(savedUser.validatePassword(faker.internet.password())).to.be.false;
+    });
+
+    it('should create a new User only if password has between 12 and 36 characters',
+      async () => {
+        const userData = {
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          password: faker.internet.password(faker.datatype.number({ min: 12, max: 36})),
+          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        };
+
+        const newUser = new User(userData);
+        newUser.password = userData.password;
+
+        savedUser = await newUser.save();
+
+        expect(savedUser._id).to.exist;
+        expect(savedUser.salt).to.exist;
+        expect(savedUser.validatePassword(userData.password)).to.be.true;
+      }
+    );
+
+    it('should throw an exception if password has less than 12 characters',
+      async () => {
+        const userMinData = {
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          password: faker.internet.password(faker.datatype.number({ min: 1, max: 11})),
+          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        };
+
+        const newUserMin = new User(userMinData);
+
+        newUserMin.password = userMinData.password;
+
+        let exception;
+
+        try {
+          await newUserMin.save();
+        } catch (exc) {
+          exception = exc;
+        }
+
+        expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
+        expect(exception.errors.password).to.exist;
+      }
+    );
+
+    it('should throw an exception if password has more than 36 characters',
+      async () => {
+        const userMaxData = {
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          password: faker.internet.password(faker.datatype.number({ min: 37, max: 48})),
+          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        };
+
+        const newUserMax = new User(userMaxData);
+
+        newUserMax.password = userMaxData.password;
+
+        let exception;
+
+        try {
+          const save = await newUserMax.save();
+          console.log(save);
+        } catch (exc) {
+          exception = exc;
+        }
+
+        expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
+        expect(exception.errors.password).to.exist;
+      }
+    );
+
+    it('should throw an exception if password is null',
+      async () => {
+        const newUserMax = new User({
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        });
+
+        let exception;
+
+        try {
+          const save = await newUserMax.save();
+          console.log(save);
+        } catch (exc) {
+          exception = exc;
+        }
+
+        expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
+        expect(exception.errors.hash).to.exist;
+      }
+    );
   });
 });

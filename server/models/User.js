@@ -12,7 +12,10 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     match: /.+\@.+\..+/
   },
-  hash: String,
+  hash: {
+    type: String,
+    required: 'Password is required.'
+  },
   salt: String,
   role: {
     type: String,
@@ -32,23 +35,39 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-const KEYLENGTH = 512;
-const ITERATIONS = 10000;
-const DIGEST = "sha512";
-const ENCODING = "hex";
+UserSchema.path('hash').validate(function () {
+  if (this._password) {
+    if (this._password.length < 12) {
+      this.invalidate('password', 'Password must be at least 12 characters.', this._password.length);
+    } else if (this._password.length > 36) {
+      this.invalidate('password', 'Password must be less than 36 characters.', this._password.length);
+    }
+  }
+});
 
-UserSchema.methods.setPassword = function (password) {
-  this.salt = crypto.randomBytes(16).toString('hex');
-  this.hash = crypto
-    .pbkdf2Sync(password, this.salt, ITERATIONS, KEYLENGTH, DIGEST)
-    .toString(ENCODING);
-};
+UserSchema.virtual('password').set(function (password) {
+  this._password = password;
+  this.salt = this.makeSalt();
+  this.hash = this.encryptPassword(password, this.salt);
+});
 
 UserSchema.methods.validatePassword = function (password) {
-  const hash = crypto
-    .pbkdf2Sync(password, this.salt, ITERATIONS, KEYLENGTH, DIGEST)
-    .toString(ENCODING);
-  return this.hash === hash;
+  return this.hash === this.encryptPassword(password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+UserSchema.methods.encryptPassword = function (password) {
+  const KEYLENGTH = 512;
+  const ITERATIONS = 10000;
+  const DIGEST = "sha512";
+  const ENCODING = "hex";
+
+  return crypto
+    .pbkdf2Sync(password, this.salt, ITERATIONS, KEYLENGTH, DIGEST)
+    .toString(ENCODING);
+}
+
+UserSchema.methods.makeSalt = function () {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+module.exports = mongoose.models.User || mongoose.model('User', UserSchema);
