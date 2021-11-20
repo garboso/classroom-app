@@ -49,8 +49,17 @@ describe('Auth routes', () => {
         const signInResponse =
           await axiosAPIClient.post('/signin', { email, password });
 
+        let hasCookieToken = false;
+
+        signInResponse.headers['set-cookie'].forEach((cookieString) => {
+          if (cookieString === `t=${signInResponse.data.token}; Path=/`) {
+            hasCookieToken = true;
+          }
+        });
+
         expect(signInResponse.status).to.equal(200);
         expect(signInResponse.data.token).to.be.a('string');
+        expect(hasCookieToken).to.be.true;
         expect(signInResponse.data.user).to.be.deep.equal({
           _id: response.data._id,
           name,
@@ -125,7 +134,7 @@ describe('Auth routes', () => {
         let hasCookieToken = false;
 
         signOutResponse.headers['set-cookie'].forEach((cookieString) => {
-          if (cookieString === `t=${signInResponse}; Path=/`) {
+          if (cookieString === `t=${signInResponse.data.token}; Path=/`) {
             hasCookieToken = true;
           }
         });
