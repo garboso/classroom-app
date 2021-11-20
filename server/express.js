@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
+const authErrorHandler = require('./helpers/authErrorHandler');
 const config = require('../config');
 let app;
 
@@ -25,6 +26,8 @@ const initializeWebServer = () => {
 
     app.use('/', userRoutes);
     app.use('/', authRoutes);
+
+    app.use(authErrorHandler);
 
     httpServer = http.createServer(app);
 

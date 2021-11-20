@@ -53,10 +53,38 @@ describe('User routes', () => {
         expect(response.data).to.have.lengthOf(numberOfUsers);
         expect(response.status).to.be.equal(200);
       }
-    );
+      );
   });
 
   describe('GET /api/user/:id', () => {
+    let authToken;
+
+    beforeEach(async () => {
+      const email = faker.internet.email();
+      const password = faker.internet.password(PASSWORD_LENGTH);
+
+      const userData = {
+        name: faker.name.findName(),
+        email,
+        password,
+        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.soon().toISOString()
+      };
+
+      const postResponse =
+      await axiosAPIClient.post('/api/user', userData);
+
+      const signInResponse =
+      await axiosAPIClient.post('/signin', { email, password });
+
+      authToken = signInResponse.data.token;
+    });
+
+    afterEach(async () => {
+      await axiosAPIClient.get('/signout');
+    });
+
     it('when asked for an existent user, then should retrieve it and receive 200 response',
       async () => {
         const userData = {
@@ -68,8 +96,15 @@ describe('User routes', () => {
           updatedAt: faker.date.soon().toISOString()
         };
 
-        const postResponse = await axiosAPIClient.post('/api/user', userData);
-        const getResponse = await axiosAPIClient.get(`/api/user/${postResponse.data._id}`);
+        const postResponse =
+        await axiosAPIClient.post('/api/user', userData);
+
+        const getResponse =
+        await axiosAPIClient.get(
+          `/api/user/${postResponse.data._id}`,
+          { headers:
+            { Authorization: `Bearer ${authToken}` }
+          });
 
         expect(getResponse).to.containSubset({
           status: 200,
@@ -81,16 +116,34 @@ describe('User routes', () => {
             updatedAt: userData.updatedAt
           }
         });
-      }
-    );
+      });
 
     it('when asked for an inexistent user, then should receive 404 response',
       async () => {
-        const response = await axiosAPIClient.get(`/api/user/${bson.ObjectId()}`);
+        const response =
+        await axiosAPIClient.get(
+          `/api/user/${bson.ObjectId()}`,
+          { headers:
+            { Authorization: `Bearer ${authToken}` }
+          }
+          );
 
         expect(response.status).to.equal(404);
       }
-    );
+      );
+
+    it('when asked for an user before sign in, then should receive 401 response',
+      async () => {
+        const response = await axiosAPIClient.get(`/api/user/${bson.ObjectId()}`);
+
+        expect(response).to.containSubset({
+          status: 401,
+          data: {
+            error: 'Please sign-in.'
+          }
+        });
+      }
+      );
   });
 
   describe('POST /api/user', () => {
@@ -112,7 +165,7 @@ describe('User routes', () => {
           data: { message: 'User signed up.' }
         });
       }
-    );
+      );
 
     it('when try to add new user with an existent email address, then should receive 400 response',
       async () => {
@@ -131,29 +184,48 @@ describe('User routes', () => {
 
         expect(response.status).to.equal(400);
       }
-    );
+      );
   });
 
   describe('PUT /api/user/:id', () => {
+    let authToken;
+    let currentUserId;
+
+    beforeEach(async () => {
+      const email = faker.internet.email();
+      const password = faker.internet.password(PASSWORD_LENGTH);
+
+      const userData = {
+        name: faker.name.findName(),
+        email,
+        password,
+        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.soon().toISOString()
+      };
+
+      const postResponse =
+        await axiosAPIClient.post('/api/user', userData);
+
+      const signInResponse =
+        await axiosAPIClient.post('/signin', { email, password });
+
+      authToken = signInResponse.data.token;
+      currentUserId = signInResponse.data.user._id;
+    });
+
+    afterEach(async () => {
+      await axiosAPIClient.get('/signout');
+    });
+
     it('when edit an existent user data, then should receive approval with 200 response',
       async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
-
-        const [firstName, lastName] = userData.name.split('');
-
-        const postResponse = await axiosAPIClient.post('/api/user', userData);
-
-        const putResponse = await axiosAPIClient.put(
-          `/api/user/${postResponse.data._id}`, {
-            email: faker.internet.email(firstName, lastName)
-          });
+        const putResponse =
+          await axiosAPIClient.put(
+            `/api/user/${currentUserId}`,
+            { email: faker.internet.email() },
+            { headers: { Authorization: `Bearer ${authToken}` } },
+          );
 
         expect(putResponse).to.containSubset({
           status: 200,
@@ -164,24 +236,20 @@ describe('User routes', () => {
 
     it('when edit an existent user, then should be able to check new state',
       async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          role: 'STUDENT',
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
+        const newRole = 'EDUCATOR';
 
-        const postResponse = await axiosAPIClient.post('/api/user', userData);
-        const userId = postResponse.data._id;
+        const putResponse =
+          await axiosAPIClient.put(
+            `/api/user/${currentUserId}`,
+            { role: newRole },
+            { headers: { Authorization: `Bearer ${authToken}` } },
+          );
 
-        const putResponse = await axiosAPIClient.put(
-          `/api/user/${userId}`, {
-            role: 'EDUCATOR'
-          });
-
-        const getResponse = await axiosAPIClient.get(`/api/user/${userId}`);
+        const getResponse =
+          await axiosAPIClient.get(
+            `/api/user/${currentUserId}`,
+            { headers: { Authorization: `Bearer ${authToken}` } }
+          );
 
         expect(getResponse).to.containSubset({
           status: 200,
@@ -190,25 +258,43 @@ describe('User routes', () => {
       }
     );
 
-    it('when try to edit an inexistent user, then should receive 404 response',
-      async () => {
-        const response = await axiosAPIClient.put(
-          `/api/user/${bson.ObjectId()}`, {
-            role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
-          });
-
-        expect(response.status).to.equal(404);
-      }
-    );
+    it.skip('when try to edit another user, then should receive 401 response');
   });
 
   describe('DELETE /api/user/:id', () => {
+    const someUserEmail = faker.internet.email();
+    const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
+    let someUserId;
+
+    beforeEach(async () => {
+      const userData = {
+        name: faker.name.findName(),
+        email: someUserEmail,
+        password: someUserPassword,
+        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.soon().toISOString()
+      };
+
+      const postResponse =
+        await axiosAPIClient.post('/api/user', userData);
+
+      someUserId = postResponse.data._id;
+    });
+
+    afterEach(async () => {
+      await axiosAPIClient.get('/signout');
+    });
+
     it('when delete an existent user, then should receive approval with 200 response',
       async () => {
+        const deletedUserEmail = faker.internet.email();
+        const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
+
         const userData = {
           name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
+          email: deletedUserEmail,
+          password: deletedUserPassword,
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -216,8 +302,18 @@ describe('User routes', () => {
 
         const postResponse =
           await axiosAPIClient.post('/api/user', userData);
+
+        const signInResponse =
+          await axiosAPIClient.post(
+            '/signin',
+            { email: deletedUserEmail, password: deletedUserPassword }
+          );
+
         const deleteResponse =
-          await axiosAPIClient.delete(`/api/user/${postResponse.data._id}`);
+          await axiosAPIClient.delete(
+            `/api/user/${postResponse.data._id}`,
+            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+          );
 
         expect(deleteResponse).to.containSubset({
           status: 200,
@@ -228,10 +324,13 @@ describe('User routes', () => {
 
     it('when delete an existent user, then shouldn\'t able to retrieve it',
       async () => {
+        const deletedUserEmail = faker.internet.email();
+        const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
+
         const userData = {
           name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
+          email: deletedUserEmail,
+          password: deletedUserPassword,
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
@@ -240,9 +339,31 @@ describe('User routes', () => {
         const postResponse =
           await axiosAPIClient.post('/api/user', userData);
 
-        await axiosAPIClient.delete(`/api/user/${postResponse.data._id}`);
+        const signInResponse =
+          await axiosAPIClient.post(
+            '/signin',
+            { email: deletedUserEmail, password: deletedUserPassword }
+          );
 
-        const getResponse = await axiosAPIClient.get(`/api/user/${postResponse.data._id}`);
+        const deleteResponse =
+          await axiosAPIClient.delete(
+            `/api/user/${postResponse.data._id}`,
+            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+          );
+
+        await axiosAPIClient.get('/signout');
+
+        const someUserSignInResponse =
+          await axiosAPIClient.post(
+            '/signin',
+            { email: someUserEmail, password: someUserPassword }
+          );
+
+        const getResponse =
+          await axiosAPIClient.get(
+            `/api/user/${postResponse.data._id}`,
+            { headers: { Authorization: `Bearer ${someUserSignInResponse.data.token}` } }
+          );
 
         expect(getResponse.status).to.equal(404);
       }

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const expressJwt = require('express-jwt');
 const config = require('../../config');
 const User = require('../models/User');
 
@@ -43,4 +44,10 @@ const signOut = async (req, res) => {
   })
 };
 
-module.exports = { signIn, signOut };
+const requireSignIn = expressJwt({
+  secret: config.jwtSecret,
+  userProperty: 'auth',
+  algorithms: ['HS256']
+});
+
+module.exports = { signIn, signOut, requireSignIn };
