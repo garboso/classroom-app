@@ -36,4 +36,11 @@ const signIn = async (req, res) => {
   }
 }
 
-module.exports = { signIn };
+const signOut = async (req, res) => {
+  res.clearCookie('t');
+  return res.status(200).json({
+    message: 'User signed out.'
+  })
+};
+
+module.exports = { signIn, signOut };

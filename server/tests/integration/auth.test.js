@@ -100,4 +100,39 @@ describe('Auth routes', () => {
       }
     );
   });
+
+  describe('GET /signout', () => {
+    it('when user signs out, then should delete jwt token cookie and return success code', 
+      async () => {
+        const email = faker.internet.email();
+        const password = faker.internet.password(16);
+
+        await axiosAPIClient.post('/api/user', {
+          email,
+          password,
+          name: faker.name.findName(),
+          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.soon()
+        });
+
+        const signInResponse =
+          await axiosAPIClient.post('/signin', { email, password });
+
+        const signOutResponse =
+          await axiosAPIClient.get('/signout');
+
+        let hasCookieToken = false;
+
+        signOutResponse.headers['set-cookie'].forEach((cookieString) => {
+          if (cookieString === `t=${signInResponse}; Path=/`) {
+            hasCookieToken = true;
+          }
+        });
+
+        expect(signOutResponse.status).to.be.equal(200);
+        expect(hasCookieToken).to.be.false;
+      }
+    );
+  });
 });
