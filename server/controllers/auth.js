@@ -50,4 +50,17 @@ const requireSignIn = expressJwt({
   algorithms: ['HS256']
 });
 
-module.exports = { signIn, signOut, requireSignIn };
+const hasAuthorization = (req, res, next) => {
+  const isAuthorized =
+    req.auth && req.params.id === req.auth._id
+
+  if (!isAuthorized) {
+    return res.status(403).json({
+      error: 'User is not authorized.'
+    });
+  }
+
+  next();
+}
+
+module.exports = { signIn, signOut, requireSignIn, hasAuthorization };

@@ -31,161 +31,161 @@ describe('User routes', () => {
     await db.closeConnection();
   });
 
-  describe('GET /api/users', () => {
-    it('when asked for all users, then should retrieve an array and 200 response',
-      async () => {
-        const numberOfUsers = faker.datatype.number({ max: 10 });
+  // describe('GET /api/users', () => {
+  //   it('when asked for all users, then should retrieve an array and 200 response',
+  //     async () => {
+  //       const numberOfUsers = faker.datatype.number({ max: 10 });
 
-        for (let i = 1; i <= numberOfUsers; i++) {
-          await axiosAPIClient.post('/api/user', {
-            name: faker.name.findName(),
-            email: faker.internet.email(),
-            password: faker.internet.password(PASSWORD_LENGTH),
-            role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-            createdAt: faker.date.past(),
-            updatedAt: faker.date.soon()
-          });
-        }
+  //       for (let i = 1; i <= numberOfUsers; i++) {
+  //         await axiosAPIClient.post('/api/user', {
+  //           name: faker.name.findName(),
+  //           email: faker.internet.email(),
+  //           password: faker.internet.password(PASSWORD_LENGTH),
+  //           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //           createdAt: faker.date.past(),
+  //           updatedAt: faker.date.soon()
+  //         });
+  //       }
 
-        const response = await axiosAPIClient.get('/api/users');
+  //       const response = await axiosAPIClient.get('/api/users');
 
-        expect(response.data).to.be.an('array');
-        expect(response.data).to.have.lengthOf(numberOfUsers);
-        expect(response.status).to.be.equal(200);
-      }
-      );
-  });
+  //       expect(response.data).to.be.an('array');
+  //       expect(response.data).to.have.lengthOf(numberOfUsers);
+  //       expect(response.status).to.be.equal(200);
+  //     }
+  //     );
+  // });
 
-  describe('GET /api/user/:id', () => {
-    let authToken;
+  // describe('GET /api/user/:id', () => {
+  //   let authToken;
 
-    beforeEach(async () => {
-      const email = faker.internet.email();
-      const password = faker.internet.password(PASSWORD_LENGTH);
+  //   beforeEach(async () => {
+  //     const email = faker.internet.email();
+  //     const password = faker.internet.password(PASSWORD_LENGTH);
 
-      const userData = {
-        name: faker.name.findName(),
-        email,
-        password,
-        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-        createdAt: faker.date.past().toISOString(),
-        updatedAt: faker.date.soon().toISOString()
-      };
+  //     const userData = {
+  //       name: faker.name.findName(),
+  //       email,
+  //       password,
+  //       role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //       createdAt: faker.date.past().toISOString(),
+  //       updatedAt: faker.date.soon().toISOString()
+  //     };
 
-      const postResponse =
-      await axiosAPIClient.post('/api/user', userData);
+  //     const postResponse =
+  //     await axiosAPIClient.post('/api/user', userData);
 
-      const signInResponse =
-      await axiosAPIClient.post('/signin', { email, password });
+  //     const signInResponse =
+  //     await axiosAPIClient.post('/signin', { email, password });
 
-      authToken = signInResponse.data.token;
-    });
+  //     authToken = signInResponse.data.token;
+  //   });
 
-    afterEach(async () => {
-      await axiosAPIClient.get('/signout');
-    });
+  //   afterEach(async () => {
+  //     await axiosAPIClient.get('/signout');
+  //   });
 
-    it('when asked for an existent user, then should retrieve it and receive 200 response',
-      async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
+  //   it('when asked for an existent user, then should retrieve it and receive 200 response',
+  //     async () => {
+  //       const userData = {
+  //         name: faker.name.findName(),
+  //         email: faker.internet.email(),
+  //         password: faker.internet.password(PASSWORD_LENGTH),
+  //         role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //         createdAt: faker.date.past().toISOString(),
+  //         updatedAt: faker.date.soon().toISOString()
+  //       };
 
-        const postResponse =
-        await axiosAPIClient.post('/api/user', userData);
+  //       const postResponse =
+  //       await axiosAPIClient.post('/api/user', userData);
 
-        const getResponse =
-        await axiosAPIClient.get(
-          `/api/user/${postResponse.data._id}`,
-          { headers:
-            { Authorization: `Bearer ${authToken}` }
-          });
+  //       const getResponse =
+  //       await axiosAPIClient.get(
+  //         `/api/user/${postResponse.data._id}`,
+  //         { headers:
+  //           { Authorization: `Bearer ${authToken}` }
+  //         });
 
-        expect(getResponse).to.containSubset({
-          status: 200,
-          data: {
-            name: userData.name,
-            email: userData.email,
-            role: userData.role,
-            createdAt: userData.createdAt,
-            updatedAt: userData.updatedAt
-          }
-        });
-      });
+  //       expect(getResponse).to.containSubset({
+  //         status: 200,
+  //         data: {
+  //           name: userData.name,
+  //           email: userData.email,
+  //           role: userData.role,
+  //           createdAt: userData.createdAt,
+  //           updatedAt: userData.updatedAt
+  //         }
+  //       });
+  //     });
 
-    it('when asked for an inexistent user, then should receive 404 response',
-      async () => {
-        const response =
-        await axiosAPIClient.get(
-          `/api/user/${bson.ObjectId()}`,
-          { headers:
-            { Authorization: `Bearer ${authToken}` }
-          }
-          );
+  //   it('when asked for an inexistent user, then should receive 404 response',
+  //     async () => {
+  //       const response =
+  //       await axiosAPIClient.get(
+  //         `/api/user/${bson.ObjectId()}`,
+  //         { headers:
+  //           { Authorization: `Bearer ${authToken}` }
+  //         }
+  //         );
 
-        expect(response.status).to.equal(404);
-      }
-      );
+  //       expect(response.status).to.equal(404);
+  //     }
+  //     );
 
-    it('when asked for an user before sign in, then should receive 401 response',
-      async () => {
-        const response = await axiosAPIClient.get(`/api/user/${bson.ObjectId()}`);
+  //   it('when asked for an user before sign in, then should receive 401 response',
+  //     async () => {
+  //       const response = await axiosAPIClient.get(`/api/user/${bson.ObjectId()}`);
 
-        expect(response).to.containSubset({
-          status: 401,
-          data: {
-            error: 'Please sign-in.'
-          }
-        });
-      }
-      );
-  });
+  //       expect(response).to.containSubset({
+  //         status: 401,
+  //         data: {
+  //           error: 'Please sign-in.'
+  //         }
+  //       });
+  //     }
+  //     );
+  // });
 
-  describe('POST /api/user', () => {
-    it('when add a new user, then should get back approval with 200 response',
-      async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        };
+  // describe('POST /api/user', () => {
+  //   it('when add a new user, then should get back approval with 200 response',
+  //     async () => {
+  //       const userData = {
+  //         name: faker.name.findName(),
+  //         email: faker.internet.email(),
+  //         password: faker.internet.password(PASSWORD_LENGTH),
+  //         role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //         createdAt: faker.date.past(),
+  //         updatedAt: faker.date.soon()
+  //       };
 
-        const response = await axiosAPIClient.post('/api/user', userData);
+  //       const response = await axiosAPIClient.post('/api/user', userData);
 
-        expect(response).to.containSubset({
-          status: 200,
-          data: { message: 'User signed up.' }
-        });
-      }
-      );
+  //       expect(response).to.containSubset({
+  //         status: 200,
+  //         data: { message: 'User signed up.' }
+  //       });
+  //     }
+  //     );
 
-    it('when try to add new user with an existent email address, then should receive 400 response',
-      async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        };
+  //   it('when try to add new user with an existent email address, then should receive 400 response',
+  //     async () => {
+  //       const userData = {
+  //         name: faker.name.findName(),
+  //         email: faker.internet.email(),
+  //         password: faker.internet.password(PASSWORD_LENGTH),
+  //         role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //         createdAt: faker.date.past(),
+  //         updatedAt: faker.date.soon()
+  //       };
 
-        await axiosAPIClient.post('/api/user', userData);
+  //       await axiosAPIClient.post('/api/user', userData);
 
-        const response = await axiosAPIClient.post('/api/user', userData);
+  //       const response = await axiosAPIClient.post('/api/user', userData);
 
-        expect(response.status).to.equal(400);
-      }
-      );
-  });
+  //       expect(response.status).to.equal(400);
+  //     }
+  //     );
+  // });
 
   describe('PUT /api/user/:id', () => {
     let authToken;
@@ -258,117 +258,145 @@ describe('User routes', () => {
       }
     );
 
-    it.skip('when try to edit another user, then should receive 401 response');
-  });
-
-  describe('DELETE /api/user/:id', () => {
-    const someUserEmail = faker.internet.email();
-    const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
-    let someUserId;
-
-    beforeEach(async () => {
-      const userData = {
-        name: faker.name.findName(),
-        email: someUserEmail,
-        password: someUserPassword,
-        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-        createdAt: faker.date.past().toISOString(),
-        updatedAt: faker.date.soon().toISOString()
-      };
-
-      const postResponse =
-        await axiosAPIClient.post('/api/user', userData);
-
-      someUserId = postResponse.data._id;
-    });
-
-    afterEach(async () => {
-      await axiosAPIClient.get('/signout');
-    });
-
-    it('when delete an existent user, then should receive approval with 200 response',
+    it('when try to edit another user, then should receive 403 response',
       async () => {
-        const deletedUserEmail = faker.internet.email();
-        const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
-
-        const userData = {
+        const newUser = {
           name: faker.name.findName(),
-          email: deletedUserEmail,
-          password: deletedUserPassword,
+          email: faker.internet.email(),
+          password: faker.internet.password(PASSWORD_LENGTH),
           role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
           createdAt: faker.date.past().toISOString(),
           updatedAt: faker.date.soon().toISOString()
         };
 
-        const postResponse =
-          await axiosAPIClient.post('/api/user', userData);
+        const newUserPostResponse =
+          await axiosAPIClient.post('/api/user', newUser);
 
-        const signInResponse =
-          await axiosAPIClient.post(
-            '/signin',
-            { email: deletedUserEmail, password: deletedUserPassword }
+        const putResponse =
+          await axiosAPIClient.put(
+            `/api/user/${newUserPostResponse}`,
+            { name: 'Bogus Bogus' },
+            { headers: { Authorization: `Bearer ${authToken}` } }
           );
 
-        const deleteResponse =
-          await axiosAPIClient.delete(
-            `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
-          );
-
-        expect(deleteResponse).to.containSubset({
-          status: 200,
-          data: { message: 'User deleted successfully.'}
+        expect(putResponse).to.containSubset({
+          status: 403,
+          data: {
+            error: 'User is not authorized.'
+          }
         });
       }
     );
-
-    it('when delete an existent user, then shouldn\'t able to retrieve it',
-      async () => {
-        const deletedUserEmail = faker.internet.email();
-        const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
-
-        const userData = {
-          name: faker.name.findName(),
-          email: deletedUserEmail,
-          password: deletedUserPassword,
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
-
-        const postResponse =
-          await axiosAPIClient.post('/api/user', userData);
-
-        const signInResponse =
-          await axiosAPIClient.post(
-            '/signin',
-            { email: deletedUserEmail, password: deletedUserPassword }
-          );
-
-        const deleteResponse =
-          await axiosAPIClient.delete(
-            `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
-          );
-
-        await axiosAPIClient.get('/signout');
-
-        const someUserSignInResponse =
-          await axiosAPIClient.post(
-            '/signin',
-            { email: someUserEmail, password: someUserPassword }
-          );
-
-        const getResponse =
-          await axiosAPIClient.get(
-            `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${someUserSignInResponse.data.token}` } }
-          );
-
-        expect(getResponse.status).to.equal(404);
-      }
-    );
-
-    it.skip('when try to delete another user which isn\'t himself, then should receive 304 response');
   });
+
+  // describe('DELETE /api/user/:id', () => {
+  //   const someUserEmail = faker.internet.email();
+  //   const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
+  //   let someUserId;
+
+  //   beforeEach(async () => {
+  //     const userData = {
+  //       name: faker.name.findName(),
+  //       email: someUserEmail,
+  //       password: someUserPassword,
+  //       role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //       createdAt: faker.date.past().toISOString(),
+  //       updatedAt: faker.date.soon().toISOString()
+  //     };
+
+  //     const postResponse =
+  //       await axiosAPIClient.post('/api/user', userData);
+
+  //     someUserId = postResponse.data._id;
+  //   });
+
+  //   afterEach(async () => {
+  //     await axiosAPIClient.get('/signout');
+  //   });
+
+  //   it('when delete an existent user, then should receive approval with 200 response',
+  //     async () => {
+  //       const deletedUserEmail = faker.internet.email();
+  //       const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
+
+  //       const userData = {
+  //         name: faker.name.findName(),
+  //         email: deletedUserEmail,
+  //         password: deletedUserPassword,
+  //         role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //         createdAt: faker.date.past().toISOString(),
+  //         updatedAt: faker.date.soon().toISOString()
+  //       };
+
+  //       const postResponse =
+  //         await axiosAPIClient.post('/api/user', userData);
+
+  //       const signInResponse =
+  //         await axiosAPIClient.post(
+  //           '/signin',
+  //           { email: deletedUserEmail, password: deletedUserPassword }
+  //         );
+
+  //       const deleteResponse =
+  //         await axiosAPIClient.delete(
+  //           `/api/user/${postResponse.data._id}`,
+  //           { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+  //         );
+
+  //       expect(deleteResponse).to.containSubset({
+  //         status: 200,
+  //         data: { message: 'User deleted successfully.'}
+  //       });
+  //     }
+  //   );
+
+  //   it('when delete an existent user, then shouldn\'t able to retrieve it',
+  //     async () => {
+  //       const deletedUserEmail = faker.internet.email();
+  //       const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
+
+  //       const userData = {
+  //         name: faker.name.findName(),
+  //         email: deletedUserEmail,
+  //         password: deletedUserPassword,
+  //         role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+  //         createdAt: faker.date.past().toISOString(),
+  //         updatedAt: faker.date.soon().toISOString()
+  //       };
+
+  //       const postResponse =
+  //         await axiosAPIClient.post('/api/user', userData);
+
+  //       const signInResponse =
+  //         await axiosAPIClient.post(
+  //           '/signin',
+  //           { email: deletedUserEmail, password: deletedUserPassword }
+  //         );
+
+  //       const deleteResponse =
+  //         await axiosAPIClient.delete(
+  //           `/api/user/${postResponse.data._id}`,
+  //           { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+  //         );
+
+  //       await axiosAPIClient.get('/signout');
+
+  //       const someUserSignInResponse =
+  //         await axiosAPIClient.post(
+  //           '/signin',
+  //           { email: someUserEmail, password: someUserPassword }
+  //         );
+
+  //       const getResponse =
+  //         await axiosAPIClient.get(
+  //           `/api/user/${postResponse.data._id}`,
+  //           { headers: { Authorization: `Bearer ${someUserSignInResponse.data.token}` } }
+  //         );
+
+  //       expect(getResponse.status).to.equal(404);
+  //     }
+  //   );
+
+  //   it.skip('when try to delete another user which isn\'t himself, then should receive 304 response');
+  // });
 });

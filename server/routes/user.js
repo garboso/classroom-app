@@ -7,8 +7,12 @@ router.get('/api/user/:id',
   authController.requireSignIn, userController.show);
 router.post('/api/user/', userController.create);
 router.put('/api/user/:id',
-  authController.requireSignIn, userController.update);
+  authController.requireSignIn,
+  authController.hasAuthorization,
+  userController.update);
 router.delete('/api/user/:id',
-  authController.requireSignIn, userController.destroy);
+  authController.requireSignIn,
+  authController.hasAuthorization,
+  userController.destroy);
 
 module.exports = router;
