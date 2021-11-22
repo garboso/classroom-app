@@ -41,7 +41,7 @@ describe('Auth routes', () => {
           name,
           email,
           password,
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+          educator: faker.helpers.randomize([false, true]),
           createdAt: faker.date.past(),
           updatedAt: faker.date.soon()
         });
@@ -75,7 +75,7 @@ describe('Auth routes', () => {
           email,
           password: faker.internet.password(16),
           name: faker.name.findName(),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+          educator: faker.helpers.randomize([false, true]),
           createdAt: faker.date.past(),
           updatedAt: faker.date.soon()
         });
@@ -120,7 +120,7 @@ describe('Auth routes', () => {
           email,
           password,
           name: faker.name.findName(),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+          educator: faker.helpers.randomize([false, true]),
           createdAt: faker.date.past(),
           updatedAt: faker.date.soon()
         });

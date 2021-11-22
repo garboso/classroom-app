@@ -19,7 +19,7 @@ const create = async (req, res) => {
 
 const index = async (req, res) => {
   try {
-    const users = await User.find().select('name email role updatedAt createdAt');
+    const users = await User.find().select('name email educator updatedAt createdAt');
     res.json(users);
   } catch (err) {
     return res.status(400).json({
@@ -31,7 +31,7 @@ const index = async (req, res) => {
 const show = async (req, res) => {
   try {
     const user =
-      await User.findById(req.params.id).select('name email role updatedAt createdAt');
+      await User.findById(req.params.id).select('name email educator updatedAt createdAt');
 
     if (user) {
       res.json(user);

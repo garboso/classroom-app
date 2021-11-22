@@ -22,7 +22,7 @@ describe("User model", () => {
       name: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      role: 'STUDENT'
+      educator: false
     };
 
     const newStudent = new User(studentData);
@@ -34,7 +34,7 @@ describe("User model", () => {
     expect(savedStudent.name).to.equal(studentData.name);
     expect(savedStudent.email).to.equal(studentData.email);
     expect(savedStudent.salt).to.exist;
-    expect(savedStudent.role).to.equal(studentData.role);
+    expect(savedStudent.educator).to.equal(studentData.educator);
   });
 
   it('should create a new Educator user', async () => {
@@ -42,7 +42,7 @@ describe("User model", () => {
       name: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      role: 'EDUCATOR'
+      educator: true
     };
 
     const newEducator = new User(educatorData);
@@ -54,7 +54,7 @@ describe("User model", () => {
     expect(savedEducator.name).to.equal(educatorData.name);
     expect(savedEducator.email).to.equal(educatorData.email);
     expect(savedEducator.salt).to.exist;
-    expect(savedEducator.role).to.equal(educatorData.role);
+    expect(savedEducator.educator).to.equal(educatorData.educator);
   });
 
   it('should create a new User only with fields defined in schema', async () => {
@@ -62,7 +62,7 @@ describe("User model", () => {
       name: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+      educator: faker.helpers.randomize([false, true]),
       phone: '22454231',
     };
 
@@ -75,12 +75,12 @@ describe("User model", () => {
     expect(savedEducator.phone).to.be.undefined;
   })
 
-  it('should throw an exception if role is invalid', async () => {
+  it('should throw an exception if educator is invalid', async () => {
     const userData = {
       name: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      role: 'Director'
+      educator: 'Director'
     };
 
     const newUser = new User(userData);
@@ -95,7 +95,7 @@ describe("User model", () => {
     }
 
     expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
-    expect(exception.errors.role).to.exist;
+    expect(exception.errors.educator).to.exist;
   });
 
   it('should throw an exception if email is invalid', async () => {
@@ -103,7 +103,7 @@ describe("User model", () => {
       name: faker.name.findName(),
       email: 'invalidemail.com',
       password: faker.internet.password(),
-      role: faker.helpers.randomize(['STUDENT', 'EDUCATOR']),
+      educator: faker.helpers.randomize([false, true]),
     };
 
     const newUser = new User(userData);
@@ -129,7 +129,7 @@ describe("User model", () => {
         name: faker.name.findName(),
         email: faker.internet.email(),
         password: password,
-        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        educator: faker.helpers.randomize([false, true])
       };
 
       const newUser = new User(userData);
@@ -145,7 +145,7 @@ describe("User model", () => {
         name: faker.name.findName(),
         email: faker.internet.email(),
         password: faker.internet.password(),
-        role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+        educator: faker.helpers.randomize([false, true])
       };
 
       const newUser = new User(userData);
@@ -162,7 +162,7 @@ describe("User model", () => {
           name: faker.name.findName(),
           email: faker.internet.email(),
           password: faker.internet.password(faker.datatype.number({ min: 12, max: 36})),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+          educator: faker.helpers.randomize([false, true])
         };
 
         const newUser = new User(userData);
@@ -182,7 +182,7 @@ describe("User model", () => {
           name: faker.name.findName(),
           email: faker.internet.email(),
           password: faker.internet.password(faker.datatype.number({ min: 1, max: 11})),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+          educator: faker.helpers.randomize([false, true])
         };
 
         const newUserMin = new User(userMinData);
@@ -208,7 +208,7 @@ describe("User model", () => {
           name: faker.name.findName(),
           email: faker.internet.email(),
           password: faker.internet.password(faker.datatype.number({ min: 37, max: 48})),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+          educator: faker.helpers.randomize([false, true])
         };
 
         const newUserMax = new User(userMaxData);
@@ -234,7 +234,7 @@ describe("User model", () => {
         const newUserMax = new User({
           name: faker.name.findName(),
           email: faker.internet.email(),
-          role: faker.helpers.randomize(['STUDENT', 'EDUCATOR'])
+          educator: faker.helpers.randomize([false, true])
         });
 
         let exception;

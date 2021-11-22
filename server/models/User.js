@@ -17,14 +17,9 @@ const UserSchema = new mongoose.Schema({
     required: 'Password is required.'
   },
   salt: String,
-  role: {
-    type: String,
-    enum: {
-      values: ['STUDENT', 'EDUCATOR'],
-      message: '{VALUE} is not supported.'
-    },
-    required: true,
-    set: (v) => v.toUpperCase()
+  educator: {
+    type: Boolean,
+    required: true
   },
   createdAt: {
     type: Date,
