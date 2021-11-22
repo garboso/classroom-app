@@ -280,9 +280,9 @@ describe('User routes', () => {
   });
 
   describe('DELETE /api/user/:id', () => {
+    let someUserId, authToken;
     const someUserEmail = faker.internet.email();
     const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
-    let someUserId;
 
     beforeEach(async () => {
       const userData = {
@@ -297,7 +297,14 @@ describe('User routes', () => {
       const postResponse =
         await axiosAPIClient.post('/api/user', userData);
 
+      const signInResponse =
+        await axiosAPIClient.post(
+          '/signin',
+          { email: someUserEmail, password: someUserPassword }
+        );
+
       someUserId = postResponse.data._id;
+      authToken = signInResponse.data.token;
     });
 
     afterEach(async () => {
@@ -306,31 +313,10 @@ describe('User routes', () => {
 
     it('when delete an existent user, then should receive approval with 200 response',
       async () => {
-        const deletedUserEmail = faker.internet.email();
-        const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
-
-        const userData = {
-          name: faker.name.findName(),
-          email: deletedUserEmail,
-          password: deletedUserPassword,
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
-
-        const postResponse =
-          await axiosAPIClient.post('/api/user', userData);
-
-        const signInResponse =
-          await axiosAPIClient.post(
-            '/signin',
-            { email: deletedUserEmail, password: deletedUserPassword }
-          );
-
         const deleteResponse =
           await axiosAPIClient.delete(
-            `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+            `/api/user/${someUserId}`,
+            { headers: { Authorization: `Bearer ${authToken}` } }
           );
 
         expect(deleteResponse).to.containSubset({
@@ -387,6 +373,35 @@ describe('User routes', () => {
       }
     );
 
-    it.skip('when try to delete another user which isn\'t himself, then should receive 304 response');
+    it('when try to delete another user which isn\'t himself, then should receive 304 response', 
+        async () => {
+          const deletedUserEmail = faker.internet.email();
+          const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
+
+          const userData = {
+            name: faker.name.findName(),
+            email: deletedUserEmail,
+            password: deletedUserPassword,
+            educator: faker.helpers.randomize([false, true]),
+            createdAt: faker.date.past().toISOString(),
+            updatedAt: faker.date.soon().toISOString()
+          };
+
+          const postResponse =
+            await axiosAPIClient.post('/api/user', userData);
+
+          const deleteResponse =
+            await axiosAPIClient.delete(
+              `/api/user/${postResponse.data._id}`,
+              { headers: { Authorization: `Bearer ${authToken}` } }
+            );
+
+          expect(deleteResponse).to.containSubset({
+            status: 403,
+            data: {
+              error: 'User is not authorized.'
+            }
+          });
+        });
   });
 });
