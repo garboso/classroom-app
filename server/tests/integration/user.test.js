@@ -56,7 +56,7 @@ describe('User routes', () => {
       );
   });
 
-  describe('GET /api/user/:id', () => {
+  describe('GET /api/user/:userId', () => {
     let authToken, userId, userData;
 
     beforeEach(async () => {
@@ -108,7 +108,7 @@ describe('User routes', () => {
         });
       });
 
-    it('when asked for an inexistent user, then should receive 404 response',
+    it('when asked for an inexistent user, then should receive 400 response',
       async () => {
         const response =
           await axiosAPIClient.get(
@@ -118,13 +118,13 @@ describe('User routes', () => {
             }
           );
 
-        expect(response.status).to.equal(404);
+        expect(response.status).to.equal(400);
       }
     );
 
     it('when asked for an user before sign in, then should receive 401 response',
       async () => {
-        const response = await axiosAPIClient.get(`/api/user/${bson.ObjectId()}`);
+        const response = await axiosAPIClient.get(`/api/user/${userId}`);
 
         expect(response).to.containSubset({
           status: 401,
@@ -177,7 +177,7 @@ describe('User routes', () => {
     );
   });
 
-  describe('PUT /api/user/:id', () => {
+  describe('PUT /api/user/:userId', () => {
     let authToken;
     let currentUserId;
 
@@ -226,12 +226,12 @@ describe('User routes', () => {
 
     it('when edit an existent user, then should be able to check new state',
       async () => {
-        const neweducator = true;
+        const newEducator = true;
 
         const putResponse =
           await axiosAPIClient.put(
             `/api/user/${currentUserId}`,
-            { educator: neweducator },
+            { educator: newEducator },
             { headers: { Authorization: `Bearer ${authToken}` } },
           );
 
@@ -264,7 +264,7 @@ describe('User routes', () => {
 
         const putResponse =
           await axiosAPIClient.put(
-            `/api/user/${newUserPostResponse}`,
+            `/api/user/${newUserPostResponse.data._id}`,
             { name: 'Bogus Bogus' },
             { headers: { Authorization: `Bearer ${authToken}` } }
           );
@@ -279,7 +279,7 @@ describe('User routes', () => {
     );
   });
 
-  describe('DELETE /api/user/:id', () => {
+  describe('DELETE /api/user/:userId', () => {
     let someUserId, authToken;
     const someUserEmail = faker.internet.email();
     const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
@@ -369,11 +369,11 @@ describe('User routes', () => {
             { headers: { Authorization: `Bearer ${someUserSignInResponse.data.token}` } }
           );
 
-        expect(getResponse.status).to.equal(404);
+        expect(getResponse.status).to.equal(400);
       }
     );
 
-    it('when try to delete another user which isn\'t himself, then should receive 304 response', 
+    it('when try to delete another user which isn\'t himself, then should receive 304 response',
         async () => {
           const deletedUserEmail = faker.internet.email();
           const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
@@ -402,6 +402,7 @@ describe('User routes', () => {
               error: 'User is not authorized.'
             }
           });
-        });
+        }
+    );
   });
 });
