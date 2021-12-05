@@ -2,7 +2,7 @@ const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
 const router = require('express').Router();
 
-router.param('userId', userController.userById)
+router.param('userId', userController.userById);
 
 router.get('/api/users/', userController.index);
 router.get('/api/user/:userId',

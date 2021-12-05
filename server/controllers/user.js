@@ -94,4 +94,14 @@ const userById = async (req, res, next, id) => {
   }
 }
 
-module.exports = { create, index, show, update, destroy, userById };
+const isEducator = async (req, res, next) => {
+  if (!(req.profile && req.profile.educator)) {
+    return res.status('403').json({
+      error: 'User is not an educator.'
+    })
+  }
+
+  next();
+}
+
+module.exports = { create, index, show, update, destroy, userById, isEducator };
