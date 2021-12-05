@@ -5,6 +5,7 @@ const expect = chai.expect;
 const faker = require('faker');
 const db = require('../../db/config');
 const { initializeWebServer, stopWebServer } = require('../../express');
+const { createUser } = require('./util');
 
 let axiosAPIClient;
 
@@ -37,14 +38,7 @@ describe('Auth routes', () => {
         const email = faker.internet.email();
         const password = faker.internet.password(16);
 
-        const response = await axiosAPIClient.post('/api/user', {
-          name,
-          email,
-          password,
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        });
+        const response = await createUser({ name, email, password });
 
         const signInResponse =
           await axiosAPIClient.post('/signin', { email, password });
@@ -71,14 +65,7 @@ describe('Auth routes', () => {
       async () => {
         const email = faker.internet.email();
 
-        await axiosAPIClient.post('/api/user', {
-          email,
-          password: faker.internet.password(16),
-          name: faker.name.findName(),
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        });
+        await createUser({ email });
 
         const signInResponse =
           await axiosAPIClient.post('/signin', {
@@ -111,19 +98,12 @@ describe('Auth routes', () => {
   });
 
   describe('GET /signout', () => {
-    it('when user signs out, then should delete jwt token cookie and return success code', 
+    it('when user signs out, then should delete jwt token cookie and return success code',
       async () => {
         const email = faker.internet.email();
         const password = faker.internet.password(16);
 
-        await axiosAPIClient.post('/api/user', {
-          email,
-          password,
-          name: faker.name.findName(),
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        });
+        await createUser({ email, password });
 
         const signInResponse =
           await axiosAPIClient.post('/signin', { email, password });

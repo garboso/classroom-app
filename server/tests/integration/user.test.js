@@ -8,6 +8,7 @@ const expect = chai.expect;
 const { initializeWebServer, stopWebServer } = require('../../express');
 let axiosAPIClient;
 const PASSWORD_LENGTH = 16;
+const { createUser, authHeader } = require('./util');
 
 describe('User routes', () => {
   before(async () => {
@@ -37,14 +38,7 @@ describe('User routes', () => {
         const numberOfUsers = faker.datatype.number({ max: 10 });
 
         for (let i = 1; i <= numberOfUsers; i++) {
-          await axiosAPIClient.post('/api/user', {
-            name: faker.name.findName(),
-            email: faker.internet.email(),
-            password: faker.internet.password(PASSWORD_LENGTH),
-            educator: faker.helpers.randomize([false, true]),
-            createdAt: faker.date.past(),
-            updatedAt: faker.date.soon()
-          });
+          await createUser();
         }
 
         const response = await axiosAPIClient.get('/api/users');
@@ -73,7 +67,14 @@ describe('User routes', () => {
       };
 
       const postResponse =
-        await axiosAPIClient.post('/api/user', userData);
+        await createUser({
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          educator: userData.educator,
+          createdAt: userData.createdAt,
+          updatedAt: userData.updatedAt
+        });
 
       const signInResponse =
         await axiosAPIClient.post('/signin', { email, password });
@@ -91,9 +92,7 @@ describe('User routes', () => {
         const getResponse =
           await axiosAPIClient.get(
             `/api/user/${userId}`,
-            { headers:
-              { Authorization: `Bearer ${authToken}` }
-            }
+            authHeader(authToken)
           );
 
         expect(getResponse).to.containSubset({
@@ -113,9 +112,7 @@ describe('User routes', () => {
         const response =
           await axiosAPIClient.get(
             `/api/user/${bson.ObjectId()}`,
-            { headers:
-              { Authorization: `Bearer ${authToken}` }
-            }
+            authHeader(authToken)
           );
 
         expect(response.status).to.equal(400);
@@ -139,16 +136,7 @@ describe('User routes', () => {
   describe('POST /api/user', () => {
     it('when add a new user, then should get back approval with 200 response',
       async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        };
-
-        const response = await axiosAPIClient.post('/api/user', userData);
+        const response = await createUser();
 
         expect(response).to.containSubset({
           status: 200,
@@ -159,18 +147,11 @@ describe('User routes', () => {
 
     it('when try to add new user with an existent email address, then should receive 400 response',
       async () => {
-        const userData = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past(),
-          updatedAt: faker.date.soon()
-        };
+        const email = faker.internet.email();
 
-        await axiosAPIClient.post('/api/user', userData);
+        await createUser({ email });
 
-        const response = await axiosAPIClient.post('/api/user', userData);
+        const response = await createUser({ email });
 
         expect(response.status).to.equal(400);
       }
@@ -185,17 +166,8 @@ describe('User routes', () => {
       const email = faker.internet.email();
       const password = faker.internet.password(PASSWORD_LENGTH);
 
-      const userData = {
-        name: faker.name.findName(),
-        email,
-        password,
-        educator: faker.helpers.randomize([false, true]),
-        createdAt: faker.date.past().toISOString(),
-        updatedAt: faker.date.soon().toISOString()
-      };
-
       const postResponse =
-        await axiosAPIClient.post('/api/user', userData);
+        await createUser({ email, password });
 
       const signInResponse =
         await axiosAPIClient.post('/signin', { email, password });
@@ -214,7 +186,7 @@ describe('User routes', () => {
           await axiosAPIClient.put(
             `/api/user/${currentUserId}`,
             { email: faker.internet.email() },
-            { headers: { Authorization: `Bearer ${authToken}` } },
+            authHeader(authToken),
           );
 
         expect(putResponse).to.containSubset({
@@ -232,13 +204,13 @@ describe('User routes', () => {
           await axiosAPIClient.put(
             `/api/user/${currentUserId}`,
             { educator: newEducator },
-            { headers: { Authorization: `Bearer ${authToken}` } },
+            authHeader(authToken),
           );
 
         const getResponse =
           await axiosAPIClient.get(
             `/api/user/${currentUserId}`,
-            { headers: { Authorization: `Bearer ${authToken}` } }
+            authHeader(authToken)
           );
 
         expect(getResponse).to.containSubset({
@@ -250,23 +222,13 @@ describe('User routes', () => {
 
     it('when try to edit another user, then should receive 403 response',
       async () => {
-        const newUser = {
-          name: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(PASSWORD_LENGTH),
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
-
-        const newUserPostResponse =
-          await axiosAPIClient.post('/api/user', newUser);
+        const newUserPostResponse = await createUser();
 
         const putResponse =
           await axiosAPIClient.put(
             `/api/user/${newUserPostResponse.data._id}`,
             { name: 'Bogus Bogus' },
-            { headers: { Authorization: `Bearer ${authToken}` } }
+            authHeader(authToken)
           );
 
         expect(putResponse).to.containSubset({
@@ -285,17 +247,8 @@ describe('User routes', () => {
     const someUserPassword = faker.internet.password(PASSWORD_LENGTH);
 
     beforeEach(async () => {
-      const userData = {
-        name: faker.name.findName(),
-        email: someUserEmail,
-        password: someUserPassword,
-        educator: faker.helpers.randomize([false, true]),
-        createdAt: faker.date.past().toISOString(),
-        updatedAt: faker.date.soon().toISOString()
-      };
-
       const postResponse =
-        await axiosAPIClient.post('/api/user', userData);
+        await createUser({ email: someUserEmail, password: someUserPassword });
 
       const signInResponse =
         await axiosAPIClient.post(
@@ -316,7 +269,7 @@ describe('User routes', () => {
         const deleteResponse =
           await axiosAPIClient.delete(
             `/api/user/${someUserId}`,
-            { headers: { Authorization: `Bearer ${authToken}` } }
+            authHeader(authToken)
           );
 
         expect(deleteResponse).to.containSubset({
@@ -331,17 +284,8 @@ describe('User routes', () => {
         const deletedUserEmail = faker.internet.email();
         const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
 
-        const userData = {
-          name: faker.name.findName(),
-          email: deletedUserEmail,
-          password: deletedUserPassword,
-          educator: faker.helpers.randomize([false, true]),
-          createdAt: faker.date.past().toISOString(),
-          updatedAt: faker.date.soon().toISOString()
-        };
-
         const postResponse =
-          await axiosAPIClient.post('/api/user', userData);
+          await createUser({ email: deletedUserEmail, password: deletedUserPassword });
 
         const signInResponse =
           await axiosAPIClient.post(
@@ -352,7 +296,7 @@ describe('User routes', () => {
         const deleteResponse =
           await axiosAPIClient.delete(
             `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${signInResponse.data.token}` } }
+            authHeader(signInResponse.data.token)
           );
 
         await axiosAPIClient.get('/signout');
@@ -366,7 +310,7 @@ describe('User routes', () => {
         const getResponse =
           await axiosAPIClient.get(
             `/api/user/${postResponse.data._id}`,
-            { headers: { Authorization: `Bearer ${someUserSignInResponse.data.token}` } }
+            authHeader(someUserSignInResponse.data.token)
           );
 
         expect(getResponse.status).to.equal(400);
@@ -378,22 +322,13 @@ describe('User routes', () => {
           const deletedUserEmail = faker.internet.email();
           const deletedUserPassword = faker.internet.password(PASSWORD_LENGTH);
 
-          const userData = {
-            name: faker.name.findName(),
-            email: deletedUserEmail,
-            password: deletedUserPassword,
-            educator: faker.helpers.randomize([false, true]),
-            createdAt: faker.date.past().toISOString(),
-            updatedAt: faker.date.soon().toISOString()
-          };
-
           const postResponse =
-            await axiosAPIClient.post('/api/user', userData);
+            await createUser({ email: deletedUserEmail, password: deletedUserPassword });
 
           const deleteResponse =
             await axiosAPIClient.delete(
               `/api/user/${postResponse.data._id}`,
-              { headers: { Authorization: `Bearer ${authToken}` } }
+              authHeader(authToken)
             );
 
           expect(deleteResponse).to.containSubset({
