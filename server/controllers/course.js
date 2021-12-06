@@ -88,7 +88,10 @@ const courseById = async (req, res, next, id) => {
 };
 
 const hasAuthorizationToChange = (req, res, next) => {
-  if (String(req.course.instructor._id) !== String(req.profile._id)) {
+  if (req.course &&
+      req.auth &&
+      (String(req.course.instructor._id) !== String(req.auth._id))
+    ) {
     return res.status(403).json({
       error: 'User is not authorized.'
     });
