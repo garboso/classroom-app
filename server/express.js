@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/course');
+const lessonRoutes = require('./routes/lesson');
 const authErrorHandler = require('./helpers/authErrorHandler');
 const config = require('../config');
 let app;
@@ -28,6 +29,7 @@ const initializeWebServer = () => {
     app.use('/', userRoutes);
     app.use('/', authRoutes);
     app.use('/', courseRoutes);
+    app.use('/', lessonRoutes);
 
     app.use(authErrorHandler);
 
