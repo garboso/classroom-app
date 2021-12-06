@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-const User = require('./User');
 
 const CourseSchema = new mongoose.Schema({
   name: {
@@ -29,6 +28,10 @@ const CourseSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User'
   },
+  lessons: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Lesson'
+  }],
   createdAt: {
     type: Date,
     default: Date.now

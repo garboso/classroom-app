@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const db = require('../../db/config');
 const Course = require('../../models/Course');
 const User = require('../../models/User');
+const Lesson = require('../../models/Lesson');
 
 describe('Course model', () => {
   let educatorId;
@@ -62,5 +63,29 @@ describe('Course model', () => {
     expect(exception).to.be.an.instanceof(mongoose.Error.ValidationError);
     expect(exception.errors.category).to.exist;
     expect(exception.errors.name).to.exist;
+  });
+
+  it('should be capable to add a list of lessons to the course', async () => {
+    const lessons = [];
+    const numberOfLessons = faker.datatype.number({ min: 1, max: 10 });
+
+    for (let i = 0; i < numberOfLessons; i++) {
+      lessons.push(new Lesson({
+        title: faker.lorem.sentence(),
+        content: faker.lorem.paragraphs(4),
+        resourceUrl: faker.internet.url()
+      }));
+    }
+
+    const savedCourse = await new Course({
+      name: faker.lorem.words(2),
+      description: faker.lorem.sentences(4),
+      category: faker.commerce.department(),
+      instructor: educatorId,
+      lessons: lessons
+    }).save();
+
+    expect(savedCourse.lessons).to.exist;
+    expect(savedCourse.lessons.length).to.equal(numberOfLessons);
   });
 });
