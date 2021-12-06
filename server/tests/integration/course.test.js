@@ -59,61 +59,61 @@ describe('Course routes', () => {
       });
     });
 
-    // it('when try to add a new course passing another educatorId on URL, then should throw an error',
-    //   async () => {
-    //     const newUser = await createUser();
+    it('when try to add a new course passing another educatorId on URL, then should throw an error',
+      async () => {
+        const newUser = await createUser();
 
-    //     const courseWithBogusId = await createCourse({ educatorId: 1, authToken });
-    //     const courseWithRealUserId = await createCourse({ educatorId: newUser.data._id, authToken });
+        const courseWithBogusId = await createCourse({ educatorId: 1, authToken });
+        const courseWithRealUserId = await createCourse({ educatorId: newUser.data._id, authToken });
 
-    //     expect(courseWithBogusId).to.containSubset({
-    //       status: 400,
-    //       data: { error: 'Could not retrieve user.'}
-    //     });
+        expect(courseWithBogusId).to.containSubset({
+          status: 400,
+          data: { error: 'Could not retrieve user.'}
+        });
 
-    //     expect(courseWithRealUserId).to.containSubset({
-    //       status: 403,
-    //       data: { error: 'User is not authorized.'}
-    //     });
-    //   }
-    //   );
+        expect(courseWithRealUserId).to.containSubset({
+          status: 403,
+          data: { error: 'User is not authorized.'}
+        });
+      }
+      );
 
-    // it('when add a new course before sign in, then should get a 401 response', async () => {
-    //   const newCourse = await createCourse({ educatorId });
+    it('when add a new course before sign in, then should get a 401 response', async () => {
+      const newCourse = await createCourse({ educatorId });
 
-    //   expect(newCourse).to.containSubset({
-    //     status: 401,
-    //     data: {
-    //       error: 'Please sign-in.'
-    //     }
-    //   });
-    // });
+      expect(newCourse).to.containSubset({
+        status: 401,
+        data: {
+          error: 'Please sign-in.'
+        }
+      });
+    });
 
-    // it('when add a new course with a student user, then should get a 401 response', async () => {
-    //   const email = faker.internet.email();
-    //   const password = faker.internet.password(16);
+    it('when add a new course with a student user, then should get a 401 response', async () => {
+      const email = faker.internet.email();
+      const password = faker.internet.password(16);
 
-    //   await createUser({ email, password, educator: false })
+      await createUser({ email, password, educator: false })
 
-    //   const studentLoginResponse = await axiosAPIClient.post('/signin', { email, password });
-    //   const studentId = studentLoginResponse.data.user._id;
+      const studentLoginResponse = await axiosAPIClient.post('/signin', { email, password });
+      const studentId = studentLoginResponse.data.user._id;
 
-    //   const newCourse = await createCourse({
-    //     educatorId: studentId,
-    //     authToken: studentLoginResponse.data.token }
-    //     );
+      const newCourse = await createCourse({
+        educatorId: studentId,
+        authToken: studentLoginResponse.data.token }
+        );
 
-    //   expect(newCourse).to.containSubset({
-    //     status: 403,
-    //     data: {
-    //       error: 'User is not an educator.'
-    //     }
-    //   });
-    // });
+      expect(newCourse).to.containSubset({
+        status: 403,
+        data: {
+          error: 'User is not an educator.'
+        }
+      });
+    });
   });
 
   describe('GET /api/courses', () => {
-    it('when asked for all courses, then should retrieve an array and 200 response', async () => {
+    it('when ask for all courses, then should retrieve an array and 200 response', async () => {
       const numberOfCourses = faker.datatype.number({ max: 10 });
 
       for (let i = 1; i <= numberOfCourses; i++) {
@@ -129,7 +129,7 @@ describe('Course routes', () => {
   });
 
   describe('GET /api/courses/by/:userId', () => {
-    it('when asked for courses from an specific educator, then should retrieve an array and 200 response', async () => {
+    it('when ask for courses from an specific educator, then should retrieve an array and 200 response', async () => {
       const numberOfCourses = faker.datatype.number({ max: 10 });
 
       for (let i = 1; i <= numberOfCourses; i++) {
@@ -146,7 +146,7 @@ describe('Course routes', () => {
       expect(getResponse.status).to.be.equal(200);
     });
 
-    it('when asked for an educator that don\'t have courses, then should retrieve an empty array', async () => {
+    it('when ask for an educator that don\'t have courses, then should retrieve an empty array', async () => {
       const newUser = await createUser({ educator: true });
 
       const getResponse = await axiosAPIClient.get(
@@ -161,7 +161,7 @@ describe('Course routes', () => {
   });
 
   describe('GET /api/course/:courseId', () => {
-    it('when asked for a specific course, then should retrieve course info and 200 response',
+    it('when ask for a specific course, then should retrieve course info and 200 response',
       async () => {
         const courseData = {
           name: faker.lorem.words(2),
