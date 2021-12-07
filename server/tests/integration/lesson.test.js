@@ -107,4 +107,21 @@ describe('Lesson routes', () => {
       }
     );
   });
+
+  describe('GET /course/:courseId/lessons', () => {
+    it('when ask for all lessons, then should get an array and success response', async () => {
+      const numberOfLessons = faker.datatype.number({ min: 1, max: 10 });
+
+      for (let i = 0; i < numberOfLessons; i++) {
+        await createLesson({ courseId, authToken });
+      }
+
+      const allLessonsResponse =
+        await axiosAPIClient.get(`/api/course/${courseId}/lessons`, authHeader(authToken));
+
+      expect(allLessonsResponse.status).to.equal(200);
+      expect(allLessonsResponse.data.lessons).to.exist;
+      expect(allLessonsResponse.data.lessons.length).to.equal(numberOfLessons);
+    });
+  });
 });

@@ -16,4 +16,8 @@ const create = async (req, res) => {
 	}
 };
 
-module.exports = { create };
+const listAll = async (req, res) => {
+	return res.status(200).json({ lessons: req.course.lessons });
+}
+
+module.exports = { create, listAll };

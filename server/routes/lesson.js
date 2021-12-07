@@ -9,6 +9,10 @@ router.post('/api/course/:courseId/lesson/new',
 	lessonController.create
 );
 
+router.get('/api/course/:courseId/lessons',
+	lessonController.listAll
+);
+
 router.param('courseId', courseController.courseById);
 
 module.exports = router;
